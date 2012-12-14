@@ -116,16 +116,10 @@ public:
 protected:
 	IPAddressImpl()
 	{
-#if defined(_WIN32)
-		Poco::Net::initializeNetwork();
-#endif
 	}
 	
 	virtual ~IPAddressImpl()
 	{
-#if defined(_WIN32)
-		Poco::Net::uninitializeNetwork();
-#endif
 	}
 
 private:
@@ -341,7 +335,7 @@ public:
 		return result;
 	}
 
-private:	
+private:
 	IPv4AddressImpl(const IPv4AddressImpl& addr)
 	{
 		std::memcpy(&_addr, &addr._addr, sizeof(_addr));

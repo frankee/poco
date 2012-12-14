@@ -49,32 +49,12 @@ using Poco::NumberFormatter;
 using Poco::IOException;
 
 
-namespace
-{
-	class NetworkInitializer
-	{
-	public:
-		NetworkInitializer()
-		{
-			Poco::Net::initializeNetwork();
-		}
-		
-		~NetworkInitializer()
-		{
-			Poco::Net::uninitializeNetwork();
-		}		
-	};
-}
-
-
 namespace Poco {
 namespace Net {
 
 
 HostEntry DNS::hostByName(const std::string& hostname)
 {
-	NetworkInitializer networkInitializer;
-	
 #if defined(POCO_HAVE_IPv6) || defined(POCO_HAVE_ADDRINFO)
 	struct addrinfo* pAI;
 	struct addrinfo hints;
@@ -111,8 +91,6 @@ HostEntry DNS::hostByName(const std::string& hostname)
 
 HostEntry DNS::hostByAddress(const IPAddress& address)
 {
-	NetworkInitializer networkInitializer;
-
 #if defined(POCO_HAVE_IPv6) || defined(POCO_HAVE_ADDRINFO)
 	SocketAddress sa(address, 0);
 	static char fqname[1024];
@@ -160,8 +138,6 @@ HostEntry DNS::hostByAddress(const IPAddress& address)
 
 HostEntry DNS::resolve(const std::string& address)
 {
-	NetworkInitializer networkInitializer;
-
 	IPAddress ip;
 	if (IPAddress::tryParse(address, ip))
 		return hostByAddress(ip);
@@ -172,8 +148,6 @@ HostEntry DNS::resolve(const std::string& address)
 
 IPAddress DNS::resolveOne(const std::string& address)
 {
-	NetworkInitializer networkInitializer;
-
 	const HostEntry& entry = resolve(address);
 	if (!entry.addresses().empty())
 		return entry.addresses()[0];
@@ -195,8 +169,6 @@ void DNS::flushCache()
 
 std::string DNS::hostName()
 {
-	NetworkInitializer networkInitializer;
-
 	char buffer[256];
 	int rc = gethostname(buffer, sizeof(buffer));
 	if (rc == 0)
@@ -270,25 +242,6 @@ void DNS::aierror(int code, const std::string& arg)
 		throw DNSException("EAI", NumberFormatter::format(code));
 	}
 #endif // POCO_HAVE_IPv6
-}
-
-
-void initializeNetwork()
-{
-#if defined(_WIN32)
-	WORD    version = MAKEWORD(2, 2);
-	WSADATA data;
-	if (WSAStartup(version, &data) != 0)
-		throw NetException("Failed to initialize network subsystem");
-#endif // _WIN32
-}
-		
-
-void uninitializeNetwork()
-{
-#if defined(_WIN32)
-	WSACleanup();
-#endif // _WIN32
 }
 
 
